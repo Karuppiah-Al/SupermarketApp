@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="ISO-8859-1">
+		<title>Insert title here</title>
+
+ <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+ <script type="text/javascript">
+ $(document).ready(function(){
+     $('#login').click(function()
+     {   
+        var user=$('#userid').val();
+        var pwd=$('#pswrd').val();
+        $.ajax({
+             type: "POST",
+             url:"NewFile",
+             data:{"user":user,"password":pwd},
+             success: function (data) {
+                if(data=='True'){
+                  $(location).attr('href','main.jsp');
+                }else{
+                    alert('Fail....');
+                }
+             }
+           });                                
+    });
+  });
+
+ </script>
+</head>
+ <body>
+     <form name="f1">
+         Username :<input type="text" name="user" " />
+              <input type="text" name="display" /><br />
+              <button id="login" onclick=""></button>
+  </form>
+ </body>
+</html>

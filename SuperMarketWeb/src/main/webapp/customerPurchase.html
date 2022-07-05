@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <style>
+    
+    .inp{
+        align-items: center;
+
+    }
+    .each-product{
+        border: 2px solid burlywood;
+        padding-left: 5px;
+        border-radius: 2px;
+        box-shadow: cadetblue;
+    }
+    .bill{
+        border:2px solid cadetblue;
+        margin-top: 20px;
+        padding:15px 10px;
+        border-radius: 20px;
+    }
+    .bill:hover{
+        background-color: rgb(255, 242, 165);
+        box-shadow:2px 2px 25px cadetblue;
+    }
+    table {
+      font-family: arial, sans-serif;
+      border-collapse: collapse;
+      width: 100%;
+      background-color: whitesmoke;
+    }
+    
+    td, th {
+      border: 1px solid #dddddd;
+      text-align: left;
+      padding: 8px;
+     
+    }
+    tr:nth-child(even) {
+      background-color:rgb(130, 206, 219);
+    }
+    button
+        {
+            background-color: rgb(243, 166, 0);
+            width: 100px;
+            height: 30px;
+            margin-left: 10px;
+            margin-top: 10px;
+            border-width: 1px;
+            border-radius: 5px;
+            cursor: grabbing;            
+        }
+        button:hover
+        {
+        background-color: rgb(255, 216, 90);
+        }
+
+        input{
+            width: 189px;
+            height: 23px;
+            margin-left: 10px;
+            border-radius: 5px;
+            border-width: 1px;
+            padding: 5px 5px;
+            margin:20px 10px;
+            background-color: white;
+        }
+        label{
+            font-style: oblique;
+            font-weight: bold;
+        }
+        .cbox{
+        width: 20px;
+        margin-left:50px; 
+        
+        }
+        
+    </style>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    
+    <script type="text/javascript">
+    let products=""
+    function getProducts(){
+        let customer=""
+        const xhttp = new XMLHttpRequest();
+       // alert('ok')
+        xhttp.onload = function(){
+            if(xhttp.status == 200){
+                alert(xhttp.responseText)
+                let sn =1;  
+                products = JSON.parse(xhttp.responseText);
+                products.forEach(element => {
+                    var name = element.productName;
+                   console.log(name)
+                    var id = element.productId;
+                    var price = element.price;
+                    var quantitLeft = element.quantity;
+                    //var eachProduct = '<div class="each-product"><label> Product Name :<input id ="name" class="inp" type="text" value='+name+' disabled/></label><br><label>Price :<input class in id type="text" value='+price+' disabled/></label><br><label> Quantity :<input  class="inp"id =q'+id+' type="number" max='+quantitLeft+' /></label><br><label>Select :<input class ="cbox" type="checkbox" value='+id+'/></label></div><br>'
+                    var eachProduct = `
+                    <div class="each-product">
+                    <label> Product Name :<input id ="name" class="inp" type="text" value='${name}' disabled/></label><br>
+                    <label>Price :<input class in id type="text" value='${price}' disabled/></label><br>
+                    <label> Quantity :<input  class="inp"id ='q${id}' type="number" max='${quantitLeft}' /></label><br>
+                    <label>Select :<input class ="cbox" type="checkbox" value='${id}'/></label></div><br>`;
+                    $('.all-products').append(eachProduct);
+                    sn=sn+1;
+                });
+            }
+        }
+        xhttp.open("GET","/SuperMarketWeb/api/product/customer");
+        xhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+        xhttp.send();
+    }
+
+    function getSelected(){
+        let choosedId = []
+        $("input:checkbox[class=cbox]:checked").each(function(){
+            choosedId.push($(this).val());
+            
+        console.log('selected'+choosedId)
+        });
+        myProducts = [];
+        
+        choosedId.forEach(element =>{
+            var ids = element;
+            var q = $("#q"+ids).val();
+            console.log(ids +" "+q);
+            item = {};
+            item['id']=ids;
+            item['quantity']=q;
+            console.log("ids"+ids)
+            products.forEach(p =>{
+                console.log(p.productId+" : "+p.productName)
+                if(p.productId === ids && q > 0 && q <= p.quantity){
+                    // item['price'] = p.price;
+                    // item['cost']=p.cost;
+                    // item['catId'] =p.catId;
+                    // item['productName'] = p.productName;
+                    // item['sId'] = p.sId;
+                    myProducts.push(item);
+                    
+                }
+            })
+        })
+        console.log(myProducts)
+        return myProducts;
+    }
+    
+    function checkCustomer(){
+        
+        var mobile = document.getElementById('mobile-no').value
+        console.log(mobile)
+        if(mobile == "" || mobile == undefined){
+        	alert("plz enter your Number")
+            return
+        }
+        myProducts = getSelected();
+        if(myProducts.length == 0){
+            alert("plz select a product")
+            return;
+        }
+        const xhttp = new XMLHttpRequest();
+        var name = document.getElementById('cname').value
+        xhttp.onload = function(){
+            if(xhttp.status == 200){
+                name = "";
+                if(xhttp.responseText == "new Customer"){
+                    $(".name-class").show();
+                    $(".name-class").addClass(".inp");
+                }
+                else{
+                    customer = JSON.parse(xhttp.responseText)
+                    console.log("custID :"+customer.id)
+                    // return true;
+                    if(customer.id != undefined || customer.id != null){
+                        //alert("generate bill")
+                        purchase(myProducts,customer.id)
+                        document.getElementById('mobile-no').value = "";
+                        document.getElementById('cname').value = "";
+                        mobile =""
+                        name=""
+
+                    }
+                }
+            }
+        }
+        xhttp.open("POST","../api/Customer");
+        xhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+        xhttp.send("name="+name+"&mobile="+mobile);
+    }
+    function purchase(myProducts,id){
+        console.log(myProducts);
+        let choosedProducts = JSON.stringify(myProducts)
+        
+        const xhttp = new XMLHttpRequest();
+        xhttp.onload=function(){
+            if(xhttp.status == 200){
+                let bill = JSON.parse(xhttp.responseText);
+                if(bill.status =="failed"){
+                    alert("unable to Generate Bill");
+                    return;
+                }
+                else{
+                    printBill(xhttp.responseText)
+                }
+                $('.all-products').empty();
+                getProducts()
+            }
+            else{
+                alert("NOT Purchased")
+            }
+        }
+        xhttp.open("POST","/api/purchase");
+        xhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+        xhttp.send("id="+id+"&myproducts="+choosedProducts);     
+    }
+    function printBill(myBill){
+        console.log(myBill)
+        let element = JSON.parse(myBill);
+     
+                    var name = element.Name;
+                    var bill = element.bill;
+                    var cost = element.cost;
+                    var gst  = element.gst
+                    var total = element.total;
+                    var discount = element.discount
+                    var purchaseDate = element.purchaseDate;
+                    let productsPurchased = element.productsPurchased;
+                    
+                    var eachBillStart = '<div class="bill" id="bill"'+bill+'>'
+                    var customerData = ' <label>Bill no : <input type="text" disabled value='+bill+'></label>        <label>Name :  <input type="text" disabled value='+name+'></label>        <label>Date :  <input type="text" disabled value='+purchaseDate+'></label>'
+                        
+                    var tableStart = '<div class= tablediv><table>'
+                            var head = '<tr><th>SN</th><th>PRODUCT NAME</th><th>QUANTITY</th><th>COST</th>         <th>GST</th>                <th>TOTAL</th>            </tr>'
+                            var rows = ""
+                            var sn =1;
+                            productsPurchased.forEach(thisProduct =>{
+                                var productTotal = thisProduct.total;
+                                var productCost = thisProduct.cost;
+                                var productGst = thisProduct.gst;
+                                var productName = thisProduct.productName
+                                var quantity = thisProduct.quantity;
+                                
+                                var row = ' <tr><td>'+sn+'</td><td>'+productName+'</td><td>'+quantity+'</td><td>'+productCost+'</td><td>'+productGst+'</td><td>'+productTotal+'</td></tr>'
+                                sn = sn +1
+                                rows = rows+row;
+                            })
+                            var tableEnd='</table></div>' 
+                            var table = tableStart+head+rows+tableEnd;
+                            var billData =' <label>Total Cost<input type="text" disabled value='+cost+'></label>        <label>Total GST<input type="text" disabled value='+gst+'></label>        <label>Discount<input type="text" disabled value='+discount+'></label>        <label>Total :<input type="text" disabled value='+total+'></label>'
+                            var eachBillEnd = '</div>'
+                            
+                            var finalBill = eachBillStart+customerData+table+billData+eachBillEnd;
+                            $('.all-bill').empty();
+                            $('.all-bill').append(finalBill);
+                            $('.name-class').hide();
+                      
+    }
+    
+    function addToCart(){
+        let myCart = getSelected()
+        if(myCart.length == 0){
+            alert("plz Select a product")
+            return
+        }
+        console.log(myCart);
+       // $('input:checkbox').prop('checked', false);
+       const xhttp = new XMLHttpRequest()
+       xhttp.onload = function(){
+           if(xhttp.status == 200){
+               if(xhttp.responseText == "ok"){
+                   alert("Successfully added to Cart");
+               }
+               else{
+                   alert("An error occured")
+               }
+           }
+       }
+       xhttp.open("POST","/SuperMarketWeb/api/cart")
+       xhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+       xhttp.send("myProducts="+JSON.stringify(myCart))
+    }
+</script>
+</head>
+<body onload="getProducts()">
+    <div id = 'id1' class="all-products">        
+    </div>
+   
+    <label class="name-class" hidden> Customer Name :<input type="text" id ="cname" class="inp name-class" hidden/><br></label>
+    <button class="submit-btn" onclick="addToCart()">Add to cart</button>
+    <button onclick="location.href='/SuperMarketWeb/cart.html'">My cart</button>
+    <div class="all-bill" id="bill">
+        
+    </div>
+    
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports</title>
+    <style>
+        button
+        {
+            background-color: rgb(243, 166, 0);
+            width: 100px;
+            height: 30px;
+            margin-left: 10px;
+            margin-top: 10px;
+            border-width: 1px;
+            border-radius: 5px;
+            cursor: grabbing;
+            
+        }
+        button:hover
+        {
+        background-color: rgb(255, 216, 90);
+        }
+        input{
+            width: 189px;
+            height: 23px;
+            margin-left: 10px;
+            border-radius: 5px;
+            border-width: 1px;
+            padding: 5px 5px;
+            margin-top:10px ;
+        }
+        input:hover{
+            box-shadow: 2px 2px 10px rgb(65, 128, 153);
+        }
+    .tablediv{
+        border:2px solid cadetblue;
+        margin-top: 20px;
+        padding:15px 10px;
+        border-radius: 20px;
+    }
+    .tablediv:hover{
+        background-color: rgb(255, 242, 165);
+        box-shadow:2px 2px 25px cadetblue;
+    }
+    table {
+      font-family: arial, sans-serif;
+      border-collapse: collapse;
+      width: 100%;
+      background-color: whitesmoke;
+    }
+    th{
+        background-color: blueviolet;
+    }
+    td, th {
+      border: 1px solid #dddddd;
+      text-align: left;
+      padding: 8px;
+      border-radius: 4px
+     
+    }
+    tr:nth-child(even) {
+      background-color:rgb(130, 206, 219);
+    }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    
+<script type="text/javascript">
+    function getMostBuys(){
+        var startDate = document.getElementById('start').value;
+        var endDate = document.getElementById('end').value;
+        if(startDate == "" || endDate == ""){
+        	alert("Enter Start and End Date")
+        	return
+        }
+        let dates=[]
+        let date = {}
+        date['startDate'] = startDate
+        date['endDate'] = endDate
+        dates.push(date)
+        var dateString = JSON.stringify(dates)
+        console.log(date)
+        console.log(dateString)
+        const xhttp = new XMLHttpRequest();
+        xhttp.onload=function(){
+        	if(xhttp.status == 200){
+        		
+            let buys = JSON.parse(xhttp.responseText);
+            console.log(buys)
+            if(buys[0].status == "failed"){
+                alert("No Buys");
+            }
+            else{
+               
+                    printMostBuys(buys)
+                
+        	}
+            }
+        }
+        xhttp.open("GET","api/reports/most-buys?date="+dateString)
+        xhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+        xhttp.send();
+    }
+
+    function getAllBuys(){
+        const xhttp = new XMLHttpRequest();
+        xhttp.onload=function(){
+            let buys = JSON.parse(xhttp.responseText);
+            if(buys[0].status == "failed"){
+                alert("No Buys");
+                return
+            }
+            else{
+                console.log(buys)
+                printAllBuys(buys)
+            }
+        }
+        xhttp.open("GET","api/reports/all-buys");
+        xhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+        xhttp.send();
+    }
+    function printMostBuys(buys){
+        $('.reports').empty()
+        var reportStart = '<div class="report" id="report1">'
+            var reportEnd = '</div>'
+        var tableStart = '<div class= tablediv><table>'
+        var tableEnd='</table></div>' 
+        var head = '<tr><th>SN</th><th>PRODUCT ID</th><th>TOTAL PRICE</th><th>QUANTITY</th>         <th>PRODUCTNAME</th>                       </tr>'
+        var sn = 1
+        var rows = ''
+        buys.forEach(data =>{
+
+            var productId = data.productId
+            var totalPrice = data.totalPrice
+            var quantity = data.quantity
+            var productName = data.productName
+            var row = ' <tr><td>'+sn+'</td><td>'+productId+'</td><td>'+totalPrice+'</td><td>'+quantity+'</td><td>'+productName+'</td></tr>'
+            sn = sn + 1
+            rows = rows + row
+        });
+        var table = tableStart+head+rows+tableEnd;
+        var finalReport = reportStart+table+reportEnd
+        $('.reports').append(finalReport)
+    }
+    function printAllBuys(buys){
+        $('.reports').empty()
+        var reportStart = '<div class="report" id="report1">'
+            var reportEnd = '</div>'
+        var tableStart = '<div class= tablediv><table>'
+        var tableEnd='</table></div>' 
+        var head = '<tr><th>SN</th><th> QUANTUTY</th><th>TOTAL AMOUNT</th><th>PRODUCT NAME</th>         <th>CUSTOMER NAME</th>           </tr>'
+        var sn = 1
+        var rows = ''
+        buys.forEach(data =>{
+
+            var customerName = data.customerName
+            var totalAmount = data.totalAmount
+            var quantity = data.quantity
+            var productName = data.productName
+            var row = ' <tr><td>'+sn+'</td><td>'+quantity+'</td><td>'+totalAmount+'</td><td>'+productName+'</td><td>'+customerName+'</td></tr>'
+            sn = sn + 1
+            rows = rows + row
+        });
+        var table = tableStart+head+rows+tableEnd;
+        var finalReport = reportStart+table+reportEnd
+        $('.reports').append(finalReport)
+    }
+</script>
+</head>
+<body>
+    <div class="options">
+        
+            <label >StartDate : </label><input id="start" type="date" ><br>
+            <label >EndDate : </label><input id="end" type="date" ><br>
+            Most Buys<button onclick="getMostBuys()">Submit</button>
+            <br>
+        
+        <label for="all-buys">All Buys : </label><button onclick=getAllBuys() >Submit</button>
+    </div>
+    <div class="reports">
+
+    </div>
+</body>
+</html>

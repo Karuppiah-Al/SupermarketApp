@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My cart</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <style>
+        table {
+      font-family: arial, sans-serif;
+      border-collapse: collapse;
+      width: 100%;
+      background-color: whitesmoke;
+    }
+    
+    td, th {
+      border: 1px solid #dddddd;
+      text-align: left;
+      padding: 8px;
+     
+    }
+    tr:nth-child(even) {
+      background-color:rgb(130, 206, 219);
+    }
+    </style>
+<script type="text/javascript">
+    let mycart
+    function getMyCart(){
+        const xhttp = new XMLHttpRequest()
+        xhttp.onload = function(){
+            if(xhttp.status == 200){
+                mycart = JSON.parse(xhttp.responseText);
+                console.log(mycart)
+                    $('.cart').empty();
+                mycart.forEach(product => {
+                    if(product.count == 0 || product.inf0 =="empty"){
+                        $('.cart').append('<h1>CART IS EMPTY');
+                            alert("Empty cart")
+                            return;
+                            
+                    }
+                    var productName = product.productName;
+                    var itemId = product.itemId;
+                    var quantity = product.quantity;
+                    var eachProduct = `
+                    <div class="each-product">
+                    <label> Product Name :<input id ="name" class="inp" type="text" value='${productName}' disabled/></label><br>
+
+                    <label> Quantity :<input  class="inp"id ='q${itemId}' type="number" min=1 value='${quantity}' onchange='updateQuantity(this)'/></label><br>
+                    `
+                    $('.cart').append(eachProduct);
+                });
+            }
+        }
+        xhttp.open("GET","api/cart")
+        xhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+        xhttp.send()
+    }
+
+    function updateQuantity(element){
+        var cartItemId = element.id;
+        var quantity = element.value;
+        cartItemId = cartItemId.substring(1);
+        console.log(quantity);
+        const xhttp = new XMLHttpRequest()
+        xhttp.onload = function(){
+            if(xhttp.status == 200){
+                if(xhttp.responseText == "limit"){
+                    alert("MAX Stock reached");
+                }
+            }
+        }
+        xhttp.open("POST","/SuperMarketWeb/api/cart/update")
+        xhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+        xhttp.send("cartItemId="+cartItemId+"&quantity="+quantity);
+    }
+
+    function buyProduct(){
+        const xhttp = new XMLHttpRequest()
+        xhttp.onload = function(){
+            if(xhttp.status == 200){
+                let bill = JSON.parse(xhttp.responseText);
+                if(bill.status =="failed"){
+                    alert("unable to Generate Bill");
+                    return;
+                }
+                else{
+                    printBill(xhttp.responseText)
+                }
+            }
+        }
+        xhttp.open("POST","api/purchase")
+        xhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+        xhttp.send()
+    }
+    function printBill(myBill){
+        console.log(myBill)
+        let element = JSON.parse(myBill);
+     
+                    var name = element.Name;
+                    var bill = element.bill;
+                    var cost = element.cost;
+                    var gst  = element.gst
+                    var total = element.total;
+                    var discount = element.discount
+                    var purchaseDate = element.purchaseDate;
+                    let productsPurchased = element.productsPurchased;
+                    
+                    var eachBillStart = '<div class="bill" id="bill"'+bill+'>'
+                    var customerData = ' <label>Bill no : <input type="text" disabled value='+bill+'></label>        <label>Name :  <input type="text" disabled value='+name+'></label>        <label>Date :  <input type="text" disabled value='+purchaseDate+'></label>'
+                        
+                    var tableStart = '<div class= tablediv><table>'
+                            var head = '<tr><th>SN</th><th>PRODUCT NAME</th><th>QUANTITY</th><th>COST</th>         <th>GST</th>                <th>TOTAL</th>            </tr>'
+                            var rows = ""
+                            var sn =1;
+                            productsPurchased.forEach(thisProduct =>{
+                                var productTotal = thisProduct.total;
+                                var productCost = thisProduct.cost;
+                                var productGst = thisProduct.gst;
+                                var productName = thisProduct.productName
+                                var quantity = thisProduct.quantity;
+                                
+                                var row = ' <tr><td>'+sn+'</td><td>'+productName+'</td><td>'+quantity+'</td><td>'+productCost+'</td><td>'+productGst+'</td><td>'+productTotal+'</td></tr>'
+                                sn = sn +1
+                                rows = rows+row;
+                            })
+                            var tableEnd='</table></div>' 
+                            var table = tableStart+head+rows+tableEnd;
+                            var billData =' <label>Total Cost<input type="text" disabled value='+cost+'></label>        <label>Total GST<input type="text" disabled value='+gst+'></label>        <label>Discount<input type="text" disabled value='+discount+'></label>        <label>Total :<input type="text" disabled value='+total+'></label>'
+                            var eachBillEnd = '</div>'
+                            
+                            var finalBill = eachBillStart+customerData+table+billData+eachBillEnd;
+                            $('.bills').empty();
+                            $('.bills').append(finalBill);
+                      
+    }
+</script>
+</head>
+<body onload="getMyCart()">
+    <div class="cart" id="my-cart">
+    </div>
+    <button onclick="buyProduct()">Buy</button>
+    <button onclick="location.href='/SuperMarketWeb/customerPurchase.html'">Home</button>
+    <div class="bills">
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style type="text/css">
+    button
+        {
+            background-color: rgb(243, 166, 0);
+            width: 100px;
+            height: 30px;
+            margin-left: 10px;
+            margin-top: 10px;
+            border-width: 1px;
+            border-radius: 5px;
+            cursor: grabbing;
+            
+        }
+        button:hover
+        {
+        background-color: rgb(255, 216, 90);
+        }
+        input{
+            width: 189px;
+            height: 23px;
+            margin-left: 10px;
+            border-radius: 5px;
+            border-width: 1px;
+            padding: 5px 5px;
+            margin-top:10px ;
+        }
+        input:hover{
+            box-shadow: 2px 2px 10px rgb(65, 128, 153);
+        }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script type="text/javascript">
+    function authenticate() {
+    	  const xhttp = new XMLHttpRequest();
+    	  var password = document.getElementById("password").value;
+    	  var mobile = document.getElementById("mobile").value;
+        	  if( mobile =="" || mobile == undefined){
+        	  alert("Enter mobile no");
+        	  return;
+          }
+          if(password == ""){
+        	  alert("Enter password");
+        	  return;
+          }
+    	  xhttp.onload = function() {
+              if(xhttp.status == 200){
+                  if(xhttp.responseText=='ok'){
+                	  alert("success")
+                      window.location.href="home";
+                    }
+                  else {
+                      alert(xhttp.responseText)
+                      document.getElementById("password").value="";
+                }
+              }
+    	  }
+          
+    	  xhttp.open("POST", "login/worker");
+    	  xhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+    	  xhttp.send("mobile="+mobile+"&password="+password);
+    	  
+    	}
+
+        
+
+    </script>
+</head>
+<body>
+    <h3> SuperMarket </h3>
+    <div>
+        <form id="form1">
+            <label><h3>Mobile   :<input id="mobile" type="text" name="mobile" required > </label> 
+            <label><h3>Password :<input id="password" type="text" name="password" required> </label><br>
+           </form>
+    </div>
+           <button onclick="authenticate()">Login</button>
+    <button onclick="location.href='signUp.html'">Sign Up</button>
+</html>

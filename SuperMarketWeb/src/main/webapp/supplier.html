@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+<style>
+     input,.choose{
+            width: 189px;
+            height: 23px;
+            margin-left: 10px;
+            border-radius: 5px;
+            border-width: 1px;
+            padding: 5px 5px;
+            margin-top:10px ;
+        }
+        input:hover, .choose:hover{
+            box-shadow: 2px 2px 10px rgb(65, 128, 153);
+        }
+        #mobile{
+            font-size: 18px;
+        }
+        #mobile:hover{
+            text-shadow: 2px 2px 10px rgb(132, 226, 233);
+        }
+        button
+        {
+            background-color: rgb(243, 166, 0);
+            width: 100px;
+            height: 30px;
+            margin-left: 10px;
+            margin-top: 10px;
+            border-width: 1px;
+            border-radius: 5px;
+            cursor: grabbing;
+            
+        }
+        button:hover
+        {
+        background-color: rgb(255, 216, 90);
+        }
+</style>
+<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+
+<script type="text/javascript">
+    function getCategory(){
+        const xhttp = new XMLHttpRequest();
+        xhttp.onload = function(){
+            if(xhttp.status == 200){
+                let categoryJson = xhttp.responseText;
+                let jsonObj = JSON.parse(categoryJson);
+                let sn = 1
+                jsonObj.forEach(element => {
+                    let a = '<fieldset><legend >'+sn+' - '+'ID :'+element.id+'</legend><label> ProductType : <input type="text" value='+element.type+' disabled></label><br><br> <label> GST     :    <input type="text" value='+element.gst+' disabled></label> <br> select : <input type="radio"  name="catId" value='+element.id+'>    </fieldset>'
+
+                    $('body').append(a);
+                    sn=sn+1;
+                });
+            }
+            else{
+                alert("No !")
+            }
+        }
+        xhttp.open("GET","../api/category/*");
+        xhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+        xhttp.send();
+    }
+    function addSupplier(){
+        let catId = $("input[name='catId']:checked").val();
+        let name = document.getElementById("name").value;
+        let website = document.getElementById("website").value;
+        let mail = document.getElementById("mail").value;
+        
+        const xhttp = new XMLHttpRequest();
+        xhttp.onload = function(){
+            if(xhttp.status == 200){
+                if(xhttp.responseText == 'ok'){
+                    alert("Added Succesfully");
+                }
+                else{
+                    alert(xhttp.responseText)
+                }
+            }
+        }
+        xhttp.open("POST","../api/Supplier");
+        xhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+        xhttp.send("catId="+catId+"&name="+name+"&website="+website+"&mail="+mail);
+    }
+    
+</script>
+</head>
+<body onload="getCategory()">
+<form>
+<input id = "name" type="text" name ="name" placeholder="Name"/>
+<input id = "website" type="text" name="website" placeholder="website" />
+
+<input id="mail" type="email" name="mail" placeholder="mail" />
+</form>
+<button onclick="addSupplier()"> Submit </button>
+<button onclick="location.href='/SuperMarketWeb/home'">Home</button>
+</body>
+</html>

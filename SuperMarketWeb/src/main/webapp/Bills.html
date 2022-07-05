@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+<style>
+    .bill{
+        border:2px solid cadetblue;
+        margin-top: 20px;
+        padding:15px 10px;
+        border-radius: 20px;     
+    }
+    .bill:hover{
+        background-color: rgb(255, 242, 165);
+        box-shadow:2px 2px 25px cadetblue;
+    }
+    table {
+      font-family: arial, sans-serif;
+      border-collapse: collapse;
+      width: 100%;
+      background-color: whitesmoke;
+      border-radius: 3px;
+    }
+    th{
+        background-color: blueviolet;
+    }
+    td, th {
+      border: 1px solid #dddddd;
+      text-align: left;
+      padding: 8px;
+     
+    }
+    tr:nth-child(even) {
+      background-color:rgb(130, 206, 219);
+    }
+    button
+        {
+            background-color: rgb(243, 166, 0);
+            width: 100px;
+            height: 30px;
+            margin-left: 10px;
+            margin-top: 10px;
+            border-width: 1px;
+            border-radius: 5px;
+            cursor: grabbing;
+            
+        }
+        button:hover
+        {
+        background-color: rgb(255, 216, 90);
+        }
+
+        input{
+            width: 189px;
+            height: 23px;
+            margin-left: 10px;
+            border-radius: 5px;
+            border-width: 1px;
+            padding: 5px 5px;
+            margin:20px 10px;
+            background-color: white;
+        }
+        label{
+            font-style: oblique;
+            font-weight: bold;
+        }
+    </style>
+<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+<script type="text/javascript">
+    let bills
+    function getBill(id){
+        $('.all-bill').empty();
+        id = document.getElementById('bill').value
+        const xhttp = new XMLHttpRequest();
+        xhttp.onload=function(){
+            if(xhttp.responseText == "null"){
+                alert("No Bills Found");
+            }
+            else{
+                 bills = JSON.parse(xhttp.responseText);
+                console.log(bills)
+                if($.isArray(bills)){
+                    bills.forEach(element => {
+                        printBill(element)
+                    });
+                }
+                else{
+                    printBill(bills)
+                }
+                        
+            }
+        }
+        xhttp.open("GET","api/bills/"+id);
+        xhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+        xhttp.send();
+    }
+    function getBillCustomer(){
+        $('.all-bill').empty();
+        var id = document.getElementById('customer').value;
+        console.log(id)
+        if(id == "" || id == undefined){
+            alert("Enter Customer ID")
+            return
+        }
+        const xhttp = new XMLHttpRequest();
+        xhttp.onload=function(){
+            if(xhttp.responseText == "null"){
+                alert("No Bills Found");
+            }
+            else{
+                if(xhttp.status != 200){
+                    console.log(xhttp.status)
+                    return
+                }
+                console.log(xhttp.response)
+                let bills = JSON.parse(xhttp.responseText);
+                console.log(xhttp.response)
+                if($.isArray(bills)){
+                    bills.forEach(element => {
+                        printBill(element)
+                    });
+                }
+                else{
+                    printBill(bills)
+                }
+                        
+            }
+        }
+        xhttp.open("GET","api/Customer/"+id+"/bills");
+        xhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+        xhttp.send();
+    }
+    function printBill(element){
+    	if('status' in element == true ){
+    		if(element.status == 'failed'){
+    			
+    		alert(element.info);
+    		return
+    		}
+    	}
+                        var name = element.Name;
+                        var bill = element.bill;
+                        var cost = element.cost;
+                        var gst  = element.gst
+                        var total = element.total;
+                        var discount = element.discount
+                        var purchaseDate = element.purchaseDate;
+                        let productsPurchased = element.productsPurchased;
+                        
+                        var eachBillStart = '<div class="bill" id="bill"'+bill+'>'
+                            var customerData = ' <label>Bill no : <input type="text" disabled value='+bill+'></label>        <label>Name :  <input type="text" disabled value='+name+'></label>        <label>Date :  <input type="text" disabled value='+purchaseDate+'></label>'
+                            
+                                var tableStart = '<div class= tablediv><table>'
+                                var head = '<tr><th>SN</th><th>PRODUCT NAME</th><th>QUANTITY</th><th>COST</th>         <th>GST</th>                <th>TOTAL</th>            </tr>'
+                                var rows = ""
+                                var sn =1;
+                                if(productsPurchased.length == 0){
+                                    return
+                                }
+                                productsPurchased.forEach(thisProduct =>{
+                                    var productTotal = thisProduct.total;
+                                    var productCost = thisProduct.cost;
+                                    var productGst = thisProduct.gst;
+                                    var productName = thisProduct.productName
+                                    var quantity = thisProduct.quantity;
+                                    
+                                    var row = ' <tr><td>'+sn+'</td><td>'+productName+'</td><td>'+quantity+'</td><td>'+productCost+'</td><td>'+productGst+'</td><td>'+productTotal+'</td></tr>'
+                                    sn = sn +1
+                                    rows = rows+row;
+                                });
+                                var tableEnd='</table></div>' 
+                                var table = tableStart+head+rows+tableEnd;
+                                var billData =' <label>Total Cost<input type="text" disabled value='+cost+'></label>        <label>Total GST<input type="text" disabled value='+gst+'></label>        <label>Discount<input type="text" disabled value='+discount+'></label>        <label>Total :<input type="text" disabled value='+total+'></label>'
+                                var eachBillEnd = '</div>'
+                                var finalBill = eachBillStart+customerData+table+billData+eachBillEnd;
+                                
+                                $('.all-bill').append(finalBill);
+    }
+
+    function printDiv() 
+   {  
+    	$('.all-bill').children('div').each(function () {
+    	   console.log($(this))
+    	    return
+    	});
+       let div = document.getElementById('bill1')
+       console.log(div)
+       return
+       var divContents =div.innerHTML;  
+       var printWindow = window.open('', '', 'height=800,width=1200');  
+       printWindow.document.write('<html><head><title>Print DIV Content</title>');  
+       printWindow.document.write('</head><body >');  
+       printWindow.document.write(divContents);  
+       printWindow.document.write('</body></html>');  
+       printWindow.document.close();  
+       printWindow.print();  
+    }  
+    </script>
+</head>
+<body onload="getBill('')">
+    <div id ="id1" class = "" >
+        <label >Enter the Bill ID<input id="bill" type="number" placeholder="Bill Id"></label><button onclick="getBill('')">GET</button>
+        <label >Enter Customer Mobile<input id="customer"  type="number" placeholder="CutomerId"></label><button onclick="getBillCustomer()">GET</button>
+        <br>
+        <button onclick="printDiv()">PRINT</button>
+    </div>
+    <div class="all-bill" id="allbill">
+        
+        
+    </div>
+</body>
+</html>

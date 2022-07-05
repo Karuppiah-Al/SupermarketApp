@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+<script type="text/javascript">
+function addCategory() {
+	  const xhttp = new XMLHttpRequest();
+	  var ptype = document.getElementById("ptype").value;
+	  var pgst = document.getElementById("pgst").value;
+    
+	  xhttp.onload = function() {
+		alert(xhttp.status);
+		  if(xhttp.status == 200){
+			  if(xhttp.responseText=='ok'){
+				  alert("Added Succesfully")
+				  document.getElementById("ptype").value = "";
+				  document.getElementById("pgst").value = "";
+				  pgst = "";
+				  ptype="";
+			  }
+			  else{
+				  alert(xhttp.responseText); 
+			  }
+		  }
+	  }
+    
+	  xhttp.open("POST", "../api/category");
+	  xhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+	  xhttp.send("ptype="+ptype+"&pgst="+pgst);
+	  
+	}
+</script>
+</head>
+<body>
+	<form action="api/category" method="post">
+		<h2>Enter New Category</h2>
+		<label> Product Type :<input id="ptype" type="text" name="ptype"/></label>
+		<label> GST :<input id="pgst" type="text" name="pgst"/></label>
+	</form>
+<button onclick="addCategory()">Submit</button>
+<button onclick="location.href='/SuperMarketWeb/home'"> Home</button>
+</body>
+</html>

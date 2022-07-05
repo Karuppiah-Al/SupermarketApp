@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+<script type="text/javascript">
+    function addDiscount(){
+        var name = document.getElementById("dName").value;
+        var amnt = document.getElementById("dSpent").value;
+        var percent = document.getElementById("dPercent").value;
+
+        const xhttp = new XMLHttpRequest();
+        xhttp.onload = function(){
+        	alert(status)
+            if(xhttp.status == 200){
+                if(xhttp.responseText == 'ok'){
+                    alert("Added Successfully")
+                }
+                else{
+                    alert("Not added ")
+                }
+            }
+            else{
+                alert("Error in Discount - addDiscount()");
+            }
+        }
+        xhttp.open("POST","../api/discounts");
+        xhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+        xhttp.send("discountName="+name+"&amountLimit="+amnt+"&discountPercent="+percent);
+    }
+</script>
+</head>
+<body>
+
+<h1>in discounts</h1>
+
+<h1> Add Discounts </h1>
+<input id="dName" type="text" placeholder="Discount Name">
+<input id="dSpent" type="text" placeholder="Minimum Spent">
+<input id="dPercent" type="text" placeholder="Discount Percent">
+<button onclick="addDiscount()">Submit</button>
+</body>
+</html>
